@@ -86,14 +86,32 @@ true_stations = [
 ]
 true_station_names = [(station+" station").upper() for station in true_stations]
 
+
+# Removing missing data
+# majority of missing entries are in the "Bound" column
+
+Delays_2023 = Delays_2023.dropna()
+Delays_2023 = Delays_2023.reset_index()
+
+
+# Removing entries where the station is unusable
+removing_indices = [i for i in range(len(Delays_2023)) if (("LINE" in Delays_2023["Station"][i]) 
+            or (Delays_2023['Station'][i] in ["LYTTON EE", "MCBRIEN BUILDING"]))]
+
+Delays_2023 = Delays_2023.drop(removing_indices)
+Delays_2023 = Delays_2023.reset_index()
+
+# cleaning up station names coded with other station names using a connective
 for i in range(len(Delays_2023)):
     station_name = Delays_2023["Station"][i]
     if " TO " in station_name:
         Delays_2023["Station"] = Delays_2023["Station"].replace(station_name, station_name[:station_name.index(" TO ")])
     if "(TO " in station_name:
         Delays_2023["Station"] = Delays_2023["Station"].replace(station_name, station_name[:station_name.index("(TO ")])
-
-Delays_2023 = Delays_2023.drop(list(Delays_2023.loc[Delays_2023["Station"] == "TORONTO TRANSIT COMMIS"].index))
+    if " - " in station_name:
+        Delays_2023["Station"] = Delays_2023["Station"].replace(station_name, station_name[:station_name.index(" - ")])
+    if " AND " in station_name:
+        Delays_2023["Station"] = Delays_2023["Station"].replace(station_name, station_name[:station_name.index(" AND ")])
 
 # Helper functions
 
@@ -137,14 +155,50 @@ def get_search_words(s:str):
         words = words[1:]
     return words
 
-special_case_search_words = [get_search_words(station_name) for station_name in special_cases]
-special_case_search_words[special_case_search_words.index(["QUEEN'S", 'PARK'])].append("QUEENS")
+def delete_entries(L:list, remove:list):
+    """
+    Given a list L and a list "remove" of entries in the list L, deleta all entries in L that are in "remove"
+    """
+    return [item for item in L if item not in remove]
+
+
+# create dictionary with true station names as the keys and a list of the observed station names at the values
+
 special_cases = list(compress(true_station_names,[" " in station_name[:len(station_name) - len("station")-1] for
     station_name in true_station_names]))
 special_cases.extend(list(compress(true_station_names,["-" in station_name for station_name in true_station_names])))
 non_special_cases = [station_name for station_name in true_station_names if station_name not in special_cases]
 
+special_case_search_words = [get_search_words(station_name) for station_name in special_cases]
+special_case_search_words[special_case_search_words.index(["QUEEN'S", 'PARK'])].append("QUEENS")
+
+
 alt_station_names = {}
 for station_name in non_special_cases:
     alt_station_names[station_name] = get_alt_station_names(station_name[:len(station_name) - len("station")-1])
-alt_station_names
+
+for i in range(len(special_cases)):
+    alt_names = []
+    for j in range(len(get_search_words(special_cases[i]))):
+        alt_names.extend(get_alt_station_names(get_search_words(special_cases[i])[j]))
+    alt_station_names[special_cases[i]] = alt_names
+
+# Some station names are part of others, particularly those that contain the words "EAST", "WEST" or "PARK"
+
+east_west_stations = [station_name for station_name in true_station_names if ("WEST" in station_name or "EAST" in station_name)]
+east_west_stations = list(compress(east_west_stations, 
+            [east_west_stations[i][:-len(" east station")]+" STATION" in true_station_names for i in range(len(east_west_stations))]))
+ew_prefix_stations = [station[:-len(" east station")]+" station".upper() for station in east_west_stations]
+ew_prefix_stations = drop_duplicates(ew_prefix_stations)
+
+for station_name in ew_prefix_stations:
+    alt_station_names[station_name] = [name for name in alt_station_names[station_name] if ("EAST" not in name and "WEST" not in name)]
+
+park_stations = [station_name for station_name in true_station_names if "PARK" in station_name]
+for i in range(len(park_stations)):
+    J = alt_station_names[park_stations[i]]
+    alt_station_names[park_stations[i]] = [name for name in J if 
+                    (("PARK" in name) and park_stations[i][:-len(" park station")] in name )]
+
+
+
