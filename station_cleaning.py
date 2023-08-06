@@ -254,3 +254,4 @@ alt_station_names['KING STATION'].append(missing_names[4])
 for station_name in alt_station_names:
     Delays_2023["Station"] = Delays_2023["Station"].replace(alt_station_names[station_name], station_name)
 
+Delays_2023 = Delays_2023.drop(columns = list(Delays_2023.columns)[0:2])
