@@ -255,3 +255,49 @@ for station_name in alt_station_names:
     Delays_2023["Station"] = Delays_2023["Station"].replace(alt_station_names[station_name], station_name)
 
 Delays_2023 = Delays_2023.drop(columns = list(Delays_2023.columns)[0:2])
+
+
+# CLEANING OTHER VARIABLES
+
+def string_to_time(s:str):
+    """
+    convert a string representing 24 hour time to the number of minutes past 12am
+    """
+    if s[0] == "0":
+        s = s[1:]
+    return int(s[:s.index(":")])*60 + int(s[s.index(":")+1:])
+
+months = {"01": "Jan",
+          "02": "Feb",
+          "03": "Mar",
+          "04": "Apr",
+          "05": "May",
+          "06": "Jun",
+          "07": "Jul",
+          "08": "Aug",
+          "09": "Sep",
+          "10": "Oct",
+          "11": "Nov",
+          "12": "Dec"
+}
+
+def string_to_date(s:str):
+    """
+    convert a string yyyy-mm-dd into month and date format
+    """
+    month = months[s[len("yyyy-"):-len("-dd")]]
+    date = s[-2:]
+    if date[0] == "0":
+        date = date[1:]
+    return [month, int(date)]
+
+
+dates = pd.DataFrame([string_to_date(Delays_2023["Date"][i]) for i in list(Delays_2023.index)], columns = ["Month", "DayOfMonth"])
+Delays_2023 = pd.concat((Delays_2023, dates), axis = 1)
+Delays_2023 = Delays_2023.drop("Date", axis = 1)
+
+new_time = [string_to_time(Delays_2023["Time"][i]) for i in list(Delays_2023.index)]
+times = pd.DataFrame(new_time, columns = ["Times"])
+Delays_2023 = pd.concat((Delays_2023, times), axis = 1)
+Delays_2023 = Delays_2023.drop("Time", axis = 1)
+Delays_2023 = Delays_2023.rename(columns = {"Times": "Time"})
