@@ -69,4 +69,24 @@ Delays_2023 |> mutate(Line = recode(Line,
            ymax = Inf, alpha = 0.1, fill = "blue") +
   annotate("rect", xmin = 15, xmax = 19, ymin = -Inf,
            ymax = Inf, alpha = 0.1, fill = "red")
+
+
+Delays_2023 |> group_by(Station) |>
+  ggplot() + 
+  geom_bar(aes(x = Station), fill = "blue", alpha = 0.2) +
+  theme_bw() +
+  labs(x = "Station", y = "Count", 
+       title = "Frequency of rides across stations") +
+  theme(axis.text.x = element_text(angle = 270), 
+        plot.title = element_text(hjust = 0.5))
+
+
+Delays_2023 |> filter(Min.Delay < 200) |>
+  group_by(Station) |> 
+  ggplot() + 
+  geom_boxplot(aes(x = Station, y = Min.Delay)) +
+  theme_bw() + theme(axis.text.x = element_text(angle = 270)) +
+  labs(y = "Average delay (minutes)", title = "Average delay by station") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_hline(yintercept = mean(Delays_2023$Min.Delay), color = "red")
   
