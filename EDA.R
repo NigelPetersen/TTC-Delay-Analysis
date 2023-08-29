@@ -86,7 +86,23 @@ Delays_2023 |> filter(Min.Delay < 200) |>
   ggplot() + 
   geom_boxplot(aes(x = reorder(Station,Min.Delay), y = Min.Delay)) +
   theme_bw() + theme(axis.text.x = element_text(angle = 270)) +
-  labs(y = "Delay (minutes)", title = "Average delay by station") +
+  labs(x = "Station", y = "Delay (minutes)", 
+       title = "Average delay by station") +
   theme(plot.title = element_text(hjust = 0.5)) +
   geom_hline(yintercept = mean(Delays_2023$Min.Delay), color = "red")
+
+
+days_of_the_week <- c("Sunday", "Monday", "Tuesday", "Wednesday", 
+                      "Thursday", "Friday", "Saturday")
+
+Delays_2023 |> mutate(Line = recode(Line, "YU" = "Yonge-University",
+  "SHP" = "Sheppard", "SRT" = "Scarborough", "BD" = "Bloor-Danforth")) |>
+  filter(Min.Delay < 200) |>
+  group_by(Day, Line) |>
+  ggplot() + 
+  geom_boxplot(aes(x = factor(Day, days_of_the_week), y = Min.Delay, 
+  color = Line)) + theme_bw() + 
+  labs(x = "Day of the week", y = "Delay (minutes)", 
+       title = "Delay times across transit lines throughout the week") + 
+  theme(plot.title = element_text(hjust = 0.5))
   
