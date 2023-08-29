@@ -16,6 +16,8 @@ get_time <- function(mins){
 Delays_2023 = read.csv(here("Github", "TTTC-Delay-Analysis", 
                "cleaned_delays_2023.csv"))
 
+Delays_2023 <- Delays_2023 |> select(-X)
+
 Delays_2023 |> mutate(Line = recode(Line,
   "YU" = "Yonge-University", "SHP" = "Sheppard",
   "SRT" = "Scarborough", "BD" = "Bloor-Danforth")) |>
@@ -35,6 +37,7 @@ Delays_2023 |> mutate(Line = recode(Line,
            ymax = Inf, alpha = 0.1, fill = "red")
 
 
+
 Delays_2023 |> mutate(Line = recode(Line,
   "YU" = "Yonge-University", "SHP" = "Sheppard",
   "SRT" = "Scarborough", "BD" = "Bloor-Danforth")) |> 
@@ -46,4 +49,24 @@ Delays_2023 |> mutate(Line = recode(Line,
   theme(plot.title = element_text(hjust=0.5)) +
   scale_fill_discrete(labels = c("Bloor-Danforth",
   "Sheppard", "Scarborough", "Yonge-University"))
+
+
+
+Delays_2023 |> mutate(Line = recode(Line,
+  "YU" = "Yonge-University", "SHP" = "Sheppard",
+  "SRT" = "Scarborough", "BD" = "Bloor-Danforth")) |>
+  mutate(time_block = floor(Time/60)) |>
+  group_by(time_block, Line) |>
+  summarize(gap_by_time = mean(Min.Gap)) |>
+  ggplot(aes(x = time_block, y = gap_by_time, color = Line)) + 
+  geom_line(linewidth = 0.7) +
+  labs(x = "One hour time intervals (24 hour time)",
+       y = "Average delay time to next train (minutes)",
+       title = "Delay times between trains per hour interval") +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  annotate("rect", xmin = 6, xmax = 10, ymin = -Inf, 
+           ymax = Inf, alpha = 0.1, fill = "blue") +
+  annotate("rect", xmin = 15, xmax = 19, ymin = -Inf,
+           ymax = Inf, alpha = 0.1, fill = "red")
   
