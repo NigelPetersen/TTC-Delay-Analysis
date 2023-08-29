@@ -84,9 +84,9 @@ Delays_2023 |> group_by(Station) |>
 Delays_2023 |> filter(Min.Delay < 200) |>
   group_by(Station) |> 
   ggplot() + 
-  geom_boxplot(aes(x = Station, y = Min.Delay)) +
+  geom_boxplot(aes(x = reorder(Station,Min.Delay), y = Min.Delay)) +
   theme_bw() + theme(axis.text.x = element_text(angle = 270)) +
-  labs(y = "Average delay (minutes)", title = "Average delay by station") +
+  labs(y = "Delay (minutes)", title = "Average delay by station") +
   theme(plot.title = element_text(hjust = 0.5)) +
   geom_hline(yintercept = mean(Delays_2023$Min.Delay), color = "red")
   
