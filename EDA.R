@@ -16,12 +16,10 @@ get_time <- function(mins){
 Delays_2023 = read.csv(here("Github", "TTTC-Delay-Analysis", 
                "cleaned_delays_2023.csv"))
 
-Delays_2023 |> filter(Min.Delay >0 & Min.Delay <=100) |>
-  ggplot() + geom_point(aes(x=Time, y=Min.Delay)) +
-  labs(x = "Time (minutes)", y = "Delay time (minutes)")
-
-
-Delays_2023 |> mutate(time_block = floor(Time/60)) |>
+Delays_2023 |> mutate(Line = recode(Line,
+  "YU" = "Yonge-University", "SHP" = "Sheppard",
+  "SRT" = "Scarborough", "BD" = "Bloor-Danforth")) |>
+  mutate(time_block = floor(Time/60)) |>
   group_by(time_block, Line) |>
   summarize(delay_by_time = mean(Min.Delay)) |>
   ggplot(aes(x = time_block, y = delay_by_time, color = Line)) + 
@@ -32,4 +30,20 @@ Delays_2023 |> mutate(time_block = floor(Time/60)) |>
   theme_bw() +
   theme(plot.title = element_text(hjust = 0.5)) + 
   annotate("rect", xmin = 6, xmax = 10, ymin = -Inf, 
-           ymax = Inf, alpha = 0.1, fill = "blue")
+           ymax = Inf, alpha = 0.1, fill = "blue") +
+  annotate("rect", xmin = 15, xmax = 19, ymin = -Inf,
+           ymax = Inf, alpha = 0.1, fill = "red")
+
+
+Delays_2023 |> mutate(Line = recode(Line,
+  "YU" = "Yonge-University", "SHP" = "Sheppard",
+  "SRT" = "Scarborough", "BD" = "Bloor-Danforth")) |> 
+  ggplot() + 
+  geom_bar(aes(x = Line), fill= "blue", alpha = 0.2) +
+  labs(x = "Transit Line", y = "Count", 
+       title = "Frequency of transit lines") +
+  theme_bw() +
+  theme(plot.title = element_text(hjust=0.5)) +
+  scale_fill_discrete(labels = c("Bloor-Danforth",
+  "Sheppard", "Scarborough", "Yonge-University"))
+  
