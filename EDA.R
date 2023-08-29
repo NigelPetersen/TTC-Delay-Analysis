@@ -25,9 +25,11 @@ Delays_2023 |> mutate(time_block = floor(Time/60)) |>
   group_by(time_block, Line) |>
   summarize(delay_by_time = mean(Min.Delay)) |>
   ggplot(aes(x = time_block, y = delay_by_time, color = Line)) + 
-  geom_line() +
+  geom_line(linewidth = 0.7) +
   labs(x = "One hour time intervals (24 hour time)",
        y = "Average delay time (minutes)",
        title = "Delay times per hour interval") +
   theme_bw() +
-  theme(plot.title = element_text(hjust = 0.5))
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  annotate("rect", xmin = 6, xmax = 10, ymin = -Inf, 
+           ymax = Inf, alpha = 0.1, fill = "blue")
