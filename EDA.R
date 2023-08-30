@@ -92,8 +92,7 @@ Delays_2023 |> filter(Min.Delay < 200) |>
   geom_hline(yintercept = mean(Delays_2023$Min.Delay), color = "red")
 
 
-days_of_the_week <- c("Sunday", "Monday", "Tuesday", "Wednesday", 
-                      "Thursday", "Friday", "Saturday")
+days_of_the_week <- unique(Delays_2023$Day)
 
 Delays_2023 |> mutate(Line = recode(Line, "YU" = "Yonge-University",
   "SHP" = "Sheppard", "SRT" = "Scarborough", "BD" = "Bloor-Danforth")) |>
