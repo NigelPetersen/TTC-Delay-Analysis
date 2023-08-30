@@ -18,9 +18,27 @@ Delays_2023 = read.csv(here("Github", "TTTC-Delay-Analysis",
 
 Delays_2023 <- Delays_2023 |> select(-X)
 
-Delays_2023 |> mutate(Line = recode(Line,
-  "YU" = "Yonge-University", "SHP" = "Sheppard",
-  "SRT" = "Scarborough", "BD" = "Bloor-Danforth")) |>
+get_avg_by <- function(data, col){
+  data |> group_by(data[col]) |>
+    summarize(mean_delay = mean(Min.Delay), mean_gap = mean(Min.Gap)) |>
+    mutate(average_delay = mean(Delays_2023$Min.Delay),
+           average_gap = mean(Delays_2023$Min.Gap))
+}
+
+
+bound <- Delays_2023 |> mutate(Bound = recode(Bound, "N" = "North",
+        "E" = "East", "W" = "West", "S" = "South"))
+line <- Delays_2023 |> mutate(Line = recode(Line, "YU" = "Yonge-University",
+        "SHP" = "Sheppard", "SRT" = "Scarborough", "BD" = "Bloor-Danforth")) 
+
+get_avg_by(bound, "Bound")
+get_avg_by(line, "Line")
+get_avg_by(Delays_2023, "Day")
+get_avg_by(Delays_2023, "Month")
+get_avg_by(Delays_2023, "Station")
+
+
+line |>
   mutate(time_block = floor(Time/60)) |>
   group_by(time_block, Line) |>
   summarize(delay_by_time = mean(Min.Delay)) |>
@@ -38,9 +56,7 @@ Delays_2023 |> mutate(Line = recode(Line,
 
 
 
-Delays_2023 |> mutate(Line = recode(Line,
-  "YU" = "Yonge-University", "SHP" = "Sheppard",
-  "SRT" = "Scarborough", "BD" = "Bloor-Danforth")) |> 
+line |> 
   ggplot() + 
   geom_bar(aes(x = Line), fill= "blue", alpha = 0.2) +
   labs(x = "Transit Line", y = "Count", 
@@ -52,9 +68,7 @@ Delays_2023 |> mutate(Line = recode(Line,
 
 
 
-Delays_2023 |> mutate(Line = recode(Line,
-  "YU" = "Yonge-University", "SHP" = "Sheppard",
-  "SRT" = "Scarborough", "BD" = "Bloor-Danforth")) |>
+line |>
   mutate(time_block = floor(Time/60)) |>
   group_by(time_block, Line) |>
   summarize(gap_by_time = mean(Min.Gap)) |>
@@ -94,8 +108,7 @@ Delays_2023 |> filter(Min.Delay < 200) |>
 
 days_of_the_week <- unique(Delays_2023$Day)
 
-Delays_2023 |> mutate(Line = recode(Line, "YU" = "Yonge-University",
-  "SHP" = "Sheppard", "SRT" = "Scarborough", "BD" = "Bloor-Danforth")) |>
+line |>
   filter(Min.Delay < 200) |>
   group_by(Day, Line) |>
   ggplot() + 
@@ -104,4 +117,10 @@ Delays_2023 |> mutate(Line = recode(Line, "YU" = "Yonge-University",
   labs(x = "Day of the week", y = "Delay (minutes)", 
        title = "Delay times across transit lines throughout the week") + 
   theme(plot.title = element_text(hjust = 0.5))
-  
+
+
+
+
+
+
+
